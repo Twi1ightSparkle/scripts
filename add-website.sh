@@ -66,6 +66,7 @@ echo "            include snippets/fastcgi-php.conf;">> $config_file
 echo "            fastcgi_pass unix:/run/php/php7.2-fpm.sock;">> $config_file
 echo "        }">> $config_file
 echo "}">> $config_file
+echo "">> $config_file
 
 
 # Enable nginx config
@@ -108,12 +109,13 @@ echo "<a href="http://nginx.com/">nginx.com</a>.</p>">> /var/www/$domain/html/in
 echo "<p><em>Thank you for using nginx.</em></p>">> /var/www/$domain/html/index.html
 echo "</body>">> /var/www/$domain/html/index.html
 echo "</html>">> /var/www/$domain/html/index.html
+echo "">> /var/www/$domain/html/index.html
 
 
 # Create .well-known
 if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
     mkdir -p /var/www/$domain/html/.well-known/matrix/
-    echo "{">> /var/www/$domain/html/.well-known/matrix/client
+    echo "{"> /var/www/$domain/html/.well-known/matrix/client
     echo "    \"m.homeserver\": {">> /var/www/$domain/html/.well-known/matrix/client
     echo "        \"base_url\": \"https://$host.modular.im\"">> /var/www/$domain/html/.well-known/matrix/client
     echo "    },">> /var/www/$domain/html/.well-known/matrix/client
@@ -121,10 +123,12 @@ if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
     echo "        \"base_url\": \"https://vector.im\"">> /var/www/$domain/html/.well-known/matrix/client
     echo "    }">> /var/www/$domain/html/.well-known/matrix/client
     echo "}">> /var/www/$domain/html/.well-known/matrix/client
+    echo "">> /var/www/$domain/html/.well-known/matrix/client
 
-    echo "{">> /var/www/$domain/html/.well-known/matrix/server
+    echo "{"> /var/www/$domain/html/.well-known/matrix/server
     echo "    \"m.server\": \"$host.modular.im:443\"">> /var/www/$domain/html/.well-known/matrix/server
     echo "}">> /var/www/$domain/html/.well-known/matrix/server
+    echo "">> /var/www/$domain/html/.well-known/matrix/server
 fi
 
 certbot --nginx
