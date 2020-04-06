@@ -140,9 +140,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-if [[ "$external_ip" == *"$dns"* ]]; then
-    certbot --nginx
-else
-    echo "DNS is incorrect"
-    exit 1
-fi
+certbot --nginx
