@@ -10,7 +10,7 @@ if [ -f "$config_file" ]; then
         rm -r /var/www/$domain
         rm -r /etc/letsencrypt/archive/$domain
         rm -r /etc/letsencrypt/live/$domain
-        find / -name "ohio.twily.me*" -delete
+        find / -name "*$domain*" -delete
         systemctl restart nginx
     else
         echo "Quitting"
