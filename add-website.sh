@@ -23,7 +23,7 @@ echo "        listen 80;">> $config_file
 echo "        listen [::]:80;">> $config_file
 echo "        root /var/www/$domain/html;">> $config_file
 echo "        index index.php index.html index.htm index.nginx-debian.html /_h5ai/public/index.php;">> $config_file
-echo "        server_name $domain.twily.me;">> $config_file
+echo "        server_name $domain;">> $config_file
 echo "        location / {">> $config_file
 echo "            try_files \$uri \$uri/ =404;">> $config_file
 
