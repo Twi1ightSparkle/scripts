@@ -133,16 +133,16 @@ fi
 
 
 # Check DNS
-external_ip=$(curl ipinfo.io/ip)
+external_ip=$(curl -s ipinfo.io/ip)
 dns=$(host $domain)
 if [ $? -ne 0 ]; then
     echo "DNS record for $host don't exist"
     exit 1
 fi
 
-if [[ "$external_ip" -ne *"$dns"* ]]; then
+if [[ "$external_ip" == *"$dns"* ]]; then
+    certbot --nginx
+else
     echo "DNS is incorrect"
     exit 1
 fi
-
-certbot --nginx
