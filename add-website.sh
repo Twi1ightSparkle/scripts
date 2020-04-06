@@ -25,9 +25,9 @@ echo "        root /var/www/$domain/html;">> $config_file
 echo "        index index.php index.html index.htm index.nginx-debian.html /_h5ai/public/index.php;">> $config_file
 echo "        server_name london.twily.me;">> $config_file
 echo "        location / {">> $config_file
-echo "            try_files $uri $uri/ =404;">> $config_file
+echo "            try_files \$uri \$uri/ =404;">> $config_file
 
-if [[ $cors != "y" && $cors != "Y" ]]; then
+if [[ $cors -eq "y" && $cors -eq "Y" ]]; then
     echo "            if (\$request_method = 'OPTIONS') {">> $config_file
     echo "                add_header 'Access-Control-Allow-Origin' '*';">> $config_file
     echo "                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';">> $config_file
