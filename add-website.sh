@@ -3,6 +3,17 @@
 
 # Read variables
 read -p "Domain: " domain
+if [ -f "$config_file" ]; then
+    read -p "$config_file already exists. Would you like to remove this site" remove
+    if [[ $remove -eq "y" && $remove -eq "Y" ]]; then
+        rm -r /var/www/$domain
+        find / -name "ohio.twily.me*" -delete
+        systemctl restart nginx
+    else
+        echo "Quitting"
+    fi
+    exit 1
+fi
 read -p "CORS [Y/N]: " cors
 read -p "Modular well-known files [Y/N]: " wellknown
 if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
@@ -12,11 +23,6 @@ fi
 
 # Create nginx config
 config_file=/etc/nginx/sites-available/$domain
-
-if [ -f "$config_file" ]; then
-    echo "$config_file already exists. Quitting"
-    exit 1
-fi
 
 echo "server {"> $config_file
 echo "        listen 80;">> $config_file
