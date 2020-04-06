@@ -80,6 +80,7 @@ if [ $? -eq 0 ]
     rm /etc/nginx/sites-enabled/$domain
     exit
 fi
+systemctl restart nginx
 
 
 # Create /var stuff
