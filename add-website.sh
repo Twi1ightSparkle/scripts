@@ -5,20 +5,22 @@
 read -p "Domain: " domain
 config_file=/etc/nginx/sites-available/$domain
 if [ -f "$config_file" ]; then
-    read -p "$config_file already exists. Would you like to remove this site" remove
+    read -p "$config_file already exists. Would you like to remove this site? [Y/N]: " remove
     if [[ $remove -eq "y" && $remove -eq "Y" ]]; then
         rm -r /var/www/$domain
+        rm -r etc/letsencrypt/archive/$domain
+        rm -r /etc/letsencrypt/live/$domain
         find / -name "ohio.twily.me*" -delete
         systemctl restart nginx
     else
-    echo "Quitting"
+        echo "Quitting"
     fi
     exit 1
 fi
-read -p "CORS [Y/N]: " cors
-read -p "Modular well-known files [Y/N]: " wellknown
+read -p "Set CORS headers? [Y/N]: " cors
+read -p "Modular well-known files? [Y/N]: " wellknown
 if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
-    read -p "Host: " host
+    read -p "Modular host: " host
 fi
 
 
