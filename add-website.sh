@@ -74,7 +74,7 @@ ln -s $config_file /etc/nginx/sites-enabled/
 
 # Test nginx config
 nginx -t > /dev/null
-if [ $? -eq 0 ]
+if [ $? -eq 0 ]; then
     echo "Problem with generating nginx config. Quitting."
     nginx -t
     rm /etc/nginx/sites-enabled/$domain
