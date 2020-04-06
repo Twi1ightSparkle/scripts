@@ -131,4 +131,18 @@ if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
     echo "">> /var/www/$domain/html/.well-known/matrix/server
 fi
 
+
+# Check DNS
+external_ip=$(curl ipinfo.io/ip)
+dns=$(host $domain)
+if [ $? -ne 0 ]; then
+    echo "DNS record for $host don't exist"
+    exit 1
+fi
+
+if [[ "$external_ip" -ne *"$dns"* ]]; then
+    echo "DNS is incorrect"
+    exit 1
+fi
+
 certbot --nginx
