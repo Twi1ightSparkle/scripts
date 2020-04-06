@@ -5,7 +5,7 @@
 read -p "Domain: " domain
 read -p "CORS [Y/N]: " cors
 read -p "Modular well-known files [Y/N]: " wellknown
-if [[ $wellknown != "y" && $wellknown != "Y" ]]; then
+if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
     read -p "Host: " host
 fi
 
@@ -15,7 +15,7 @@ config_file=/etc/nginx/sites-available/$domain
 
 if [ -f "$config_file" ]; then
     echo "$config_file already exists. Quitting"
-    exit
+    exit 1
 fi
 
 echo "server {"> $config_file
@@ -78,7 +78,7 @@ if [ $? -eq 0 ]; then
     echo "Problem with generating nginx config. Quitting."
     nginx -t
     rm /etc/nginx/sites-enabled/$domain
-    exit
+    exit 1
 fi
 systemctl restart nginx
 
@@ -111,7 +111,7 @@ echo "</html>">> /var/www/$domain/html/index.html
 
 
 # Create .well-known
-if [[ $wellknown != "y" && $wellknown != "Y" ]]; then
+if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
     echo "{">> /var/www/$domain/html/.well-known/matrix/client
     echo "    \"m.homeserver\": {">> /var/www/$domain/html/.well-known/matrix/client
     echo "        \"base_url\": \"https://$host.modular.im\"">> /var/www/$domain/html/.well-known/matrix/client
