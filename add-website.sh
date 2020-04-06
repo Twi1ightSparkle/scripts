@@ -8,8 +8,8 @@ if [ -f "$config_file" ]; then
     read -p "$config_file already exists. Would you like to remove this site? [Y/N]: " remove
     if [[ $remove -eq "y" && $remove -eq "Y" ]]; then
         rm -r /var/www/$domain
-        rm -r /etc/letsencrypt/archive/$domain
-        rm -r /etc/letsencrypt/live/$domain
+        rm -r /etc/letsencrypt/archive/$domain*
+        rm -r /etc/letsencrypt/live/$domain*
         find / -name "*$domain*" -delete
         systemctl restart nginx
     else
