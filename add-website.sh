@@ -3,6 +3,7 @@
 
 # Read variables
 read -p "Domain: " domain
+config_file=/etc/nginx/sites-available/$domain
 if [ -f "$config_file" ]; then
     read -p "$config_file already exists. Would you like to remove this site" remove
     if [[ $remove -eq "y" && $remove -eq "Y" ]]; then
@@ -10,7 +11,7 @@ if [ -f "$config_file" ]; then
         find / -name "ohio.twily.me*" -delete
         systemctl restart nginx
     else
-        echo "Quitting"
+    echo "Quitting"
     fi
     exit 1
 fi
@@ -22,8 +23,6 @@ fi
 
 
 # Create nginx config
-config_file=/etc/nginx/sites-available/$domain
-
 echo "server {"> $config_file
 echo "        listen 80;">> $config_file
 echo "        listen [::]:80;">> $config_file
