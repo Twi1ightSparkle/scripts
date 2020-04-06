@@ -112,6 +112,7 @@ echo "</html>">> /var/www/$domain/html/index.html
 
 # Create .well-known
 if [[ $wellknown -eq "y" && $wellknown -eq "Y" ]]; then
+    mkdir -p /var/www/$domain/html/.well-known/matrix/
     echo "{">> /var/www/$domain/html/.well-known/matrix/client
     echo "    \"m.homeserver\": {">> /var/www/$domain/html/.well-known/matrix/client
     echo "        \"base_url\": \"https://$host.modular.im\"">> /var/www/$domain/html/.well-known/matrix/client
