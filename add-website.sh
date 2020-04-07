@@ -22,7 +22,7 @@ fi
 
 # Ask to, and set up reverse proxy nginx config
 read -p "Proxy? [Y/N]: " proxy
-if [[ $wellknown == "y" || $wellknown == "Y" ]]; then
+if [[ $proxy == "y" || $proxy == "Y" ]]; then
     read -p "Proxy to port: " port
     
     # Create nginc config file
