@@ -164,10 +164,9 @@ systemctl restart nginx
 
 
 # Check DNS
-external_ip=$(curl -s ipinfo.io/ip)
 dns=$(host $domain)
 if [ $? -ne 0 ]; then
-    echo "DNS record for $host don't exist"
+    echo "DNS record for $domain don't exist"
     exit 1
 fi
 
