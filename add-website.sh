@@ -10,7 +10,7 @@ if [ -f "$config_file" ]; then
     if [[ $remove == "y" || $remove == "Y" ]]; then
     dns=$(host $domain)
         if [ $? == 0 ]; then
-            certbot revoke --cert-name $domain
+            certbot revoke --delete-after-revoke --cert-name $domain
         fi
         rm -r /var/www/$domain
         find / -name "*$domain*" -delete
@@ -174,4 +174,4 @@ fi
 
 
 # Get and enable LetsEncrypt SSL cert
-certbot --nginx -d $domain
+certbot --redirect --nginx -d $domain
