@@ -10,7 +10,7 @@ if [ -f "$config_file" ]; then
     if [[ $remove == "y" || $remove == "Y" ]]; then
     dns=$(host $domain)
         if [ $? == 0 ]; then
-            certbot revoke -d $domain
+            certbot revoke --cert-name $domain
             certbot delete -d $domain
         fi
         rm -r /var/www/$domain
