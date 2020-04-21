@@ -8,6 +8,11 @@ config_file=/etc/nginx/sites-available/$domain
 if [ -f "$config_file" ]; then
     read -p "$config_file already exists. Would you like to remove this site? [Y/N]: " remove
     if [[ $remove == "y" || $remove == "Y" ]]; then
+    dns=$(host $domain)
+        if [ $? == 0 ]; then
+            certbot revoke -d $domain
+            certbot delete -d $domain
+        fi
         rm -r /var/www/$domain
         rm -r /etc/letsencrypt/archive/$domain*
         rm -r /etc/letsencrypt/live/$domain*
