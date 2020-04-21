@@ -11,11 +11,8 @@ if [ -f "$config_file" ]; then
     dns=$(host $domain)
         if [ $? == 0 ]; then
             certbot revoke --cert-name $domain
-            certbot delete -d $domain
         fi
         rm -r /var/www/$domain
-        rm -r /etc/letsencrypt/archive/$domain*
-        rm -r /etc/letsencrypt/live/$domain*
         find / -name "*$domain*" -delete
         systemctl restart nginx
     else
