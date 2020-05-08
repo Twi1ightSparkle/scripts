@@ -47,10 +47,7 @@ else
         read -p "Modular host: " host
     fi
 
-    # If not well known, ask for cors
-    if [[ ! $wellknown == "y" || $wellknown == "Y" ]]; then
-        read -p "Set CORS headers? [Y/N]: " cors
-    fi
+    read -p "Set CORS headers? [Y/N]: " cors
 
     # Create nginx config file
     echo "server {"> $config_file
@@ -60,7 +57,7 @@ else
     echo "        index index.php index.html index.htm index.nginx-debian.html /_h5ai/public/index.php;">> $config_file
     echo "        server_name $domain;">> $config_file
 
-    # Create well-known responses
+    # Create well-known "files"
     if [[ $wellknown == "y" || $wellknown == "Y" ]]; then
         echo "        location /.well-known/matrix/client {">> $config_file
         echo "                return 200 '{\"m.homeserver\": {\"base_url\": \"https://$host.modular.im\"},\"m.identity_server\": {\"base_url\": \"https://vector.im\"}}';">> $config_file
@@ -145,25 +142,6 @@ else
     echo "</body>">> /var/www/$domain/html/index.html
     echo "</html>">> /var/www/$domain/html/index.html
     echo "">> /var/www/$domain/html/index.html
-
-    # Create .well-known is selected
-    # if [[ $wellknown == "y" || $wellknown == "Y" ]]; then
-    #     mkdir -p /var/www/$domain/html/.well-known/matrix/
-    #     echo "{"> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "    \"m.homeserver\": {">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "        \"base_url\": \"https://$host.modular.im\"">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "    },">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "    \"m.identity_server\": {">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "        \"base_url\": \"https://vector.im\"">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "    }">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "}">> /var/www/$domain/html/.well-known/matrix/client
-    #     echo "">> /var/www/$domain/html/.well-known/matrix/client
-
-    #     echo "{"> /var/www/$domain/html/.well-known/matrix/server
-    #     echo "    \"m.server\": \"$host.modular.im:443\"">> /var/www/$domain/html/.well-known/matrix/server
-    #     echo "}">> /var/www/$domain/html/.well-known/matrix/server
-    #     echo "">> /var/www/$domain/html/.well-known/matrix/server
-    # fi
 fi
 
 
