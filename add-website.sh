@@ -13,7 +13,6 @@ if [ -f "$config_file" ]; then
             certbot revoke --delete-after-revoke --cert-name $domain
         fi
         rm -r /var/www/$domain
-        find / -name "*$domain*" -delete
         systemctl restart nginx
     else
         echo "Quitting"
