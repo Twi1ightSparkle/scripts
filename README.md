@@ -1,2 +1,3 @@
-# Misc scripts left publicly for personal use and easy access from random servers
-Use at own risk. May be customized to my use/servers
+# Miscellaneous scripts
+
+Use at own risk. May be customized for my use cases. I take no responsibility if something breaks or if you accidentally email 5000 people
