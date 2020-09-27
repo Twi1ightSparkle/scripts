@@ -3,7 +3,6 @@ import random
 import sys
 from subprocess import call
 from sys import argv
-from sys import platform
 
 
 if len(argv) == 2:
@@ -27,6 +26,3 @@ print(
 	"\nNew randomized email:", email,
 	"\nThis has been copied to the clipboard\n"
 )
-
-if platform == "win32":
-	input("Press Enter to exit")
