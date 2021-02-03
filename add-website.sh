@@ -1,21 +1,29 @@
 #!/bin/bash
 
-read -p "Domain: " domain
-config_file=/etc/nginx/sites-available/$domain
+read -r -p "Domain: " domain
+config_file="/etc/nginx/conf.d/$domain.conf"
 
 
 # If config file exists, ask to remove site
 if [ -f "$config_file" ]; then
-    read -p "$config_file already exists. Would you like to remove this site? [Y/N]: " remove
-    if [[ $remove == "y" || $remove == "Y" ]]; then
-        dns=$(host $domain)
+    read -r -p "$config_file already exists. What would you like to do? [r(emove) / c(ertificate) / Q(uit)]: " remove
+    if [[ $remove == "r" || $remove == "r" ]]; then
+        dns=$(host "$domain")
         if [ $? == 0 ]; then
-            certbot revoke --delete-after-revoke --cert-name $domain
+            certbot revoke --delete-after-revoke --cert-name "$domain"
         fi
-        rm -r /var/www/$domain
-        rm -r /etc/nginx/sites-enabled/$domain
-        rm -r /etc/nginx/sites-available/$domain
+        rm -r "/var/www/$domain"
+        rm -r "/etc/nginx/conf.d/$domain.conf"
         systemctl restart nginx
+    elif [[ $remove == "c" || $remove == "C" ]]; then
+        # Check DNS
+        dns=$(host "$domain")
+        if [ $? -ne 0 ]; then
+            echo "DNS record for $domain don't exist"
+            exit 1
+        fi
+        # Optain certificate
+        certbot --redirect --nginx -d "$domain"
     else
         echo "Quitting"
     fi
@@ -24,130 +32,169 @@ fi
 
 
 # Ask to, and set up reverse proxy nginx config
-read -p "Proxy? [Y/N]: " proxy
-if [[ $proxy == "y" || $proxy == "Y" ]]; then
-    read -p "Proxy to port: " port
+read -r -p "Proxy? [y/N]: " proxy
+if [[ $proxy == "y" || $proxy == "Y" ]];
+then
+
+read -r -p "Proxy to port: " port
+read -r -p "Get Let's Encrypt certificate? [y/N]: " get_cert
+
+# Create nginc config file
+cat > "$config_file" <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $domain;
     
-    # Create nginc config file
-    echo "server {"> $config_file
-    echo "    listen 80;">> $config_file
-    echo "    listen [::]:80;">> $config_file
-    echo "    server_name $domain;">> $config_file
-    echo "    ">> $config_file
-    echo "    location / {">> $config_file
-    echo "            proxy_pass http://localhost:$port;">> $config_file
-    echo "            proxy_set_header X-Forwarded-For ]\$remote_addr;">> $config_file
-    echo "    }">> $config_file
-    echo "}">> $config_file
+    location / {
+        proxy_pass http://localhost:$port;
+        proxy_set_header X-Forwarded-For ]\$remote_addr;
+    }
+}
+EOF
 
 
 # If not proxy, set up normal site with a /var/www folder
 else
-    read -p "Modular well-known? [Y/N]: " wellknown
-    if [[ $wellknown == "y" || $wellknown == "Y" ]]; then
-        read -p "Modular host: " host
-    fi
-
-    read -p "Set CORS headers? [Y/N]: " cors
-
-    # Create nginx config file
-    echo "server {"> $config_file
-    echo "        listen 80;">> $config_file
-    echo "        listen [::]:80;">> $config_file
-    echo "        root /var/www/$domain/html;">> $config_file
-    echo "        index index.php index.html index.htm index.nginx-debian.html /_h5ai/public/index.php;">> $config_file
-    echo "        server_name $domain;">> $config_file
-
-    # Create well-known "files"
-    if [[ $wellknown == "y" || $wellknown == "Y" ]]; then
-        echo "        location /.well-known/matrix/client {">> $config_file
-        echo "                return 200 '{\"m.homeserver\": {\"base_url\": \"https://$host.modular.im\"},\"m.identity_server\": {\"base_url\": \"https://vector.im\"}}';">> $config_file
-        echo "                add_header Content-Type application/json;">> $config_file
-        echo "                add_header \"Access-Control-Allow-Origin\" *;">> $config_file
-        echo "         }">> $config_file
-        echo "        location /.well-known/matrix/server {">> $config_file
-        echo "                return 200 '{\"m.server\": \"$host.modular.im:443\"}';">> $config_file
-        echo "                add_header Content-Type application/json;">> $config_file
-        echo "                add_header \"Access-Control-Allow-Origin\" *;">> $config_file
-        echo "         }">> $config_file
-    fi
-
-    echo "        location / {">> $config_file
-    echo "            try_files \$uri \$uri/ =404;">> $config_file
-
-    # Add CORS headers if selected
-    if [[ $cors == "y" || $cors == "Y" ]]; then
-        echo "            if (\$request_method = 'OPTIONS') {">> $config_file
-        echo "                add_header 'Access-Control-Allow-Origin' '*';">> $config_file
-        echo "                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';">> $config_file
-        echo "                #">> $config_file
-        echo "                # Custom headers and headers various browsers *should* be OK with but aren't">> $config_file
-        echo "                #">> $config_file
-        echo "                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';">> $config_file
-        echo "                #">> $config_file
-        echo "                # Tell client that this pre-flight info is valid for 20 days">> $config_file
-        echo "                #">> $config_file
-        echo "                add_header 'Access-Control-Max-Age' 1728000;">> $config_file
-        echo "                add_header 'Content-Type' 'text/plain; charset=utf-8';">> $config_file
-        echo "                add_header 'Content-Length' 0;">> $config_file
-        echo "                return 204;">> $config_file
-        echo "            }">> $config_file
-        echo "            if (\$request_method = 'POST') {">> $config_file
-        echo "                add_header 'Access-Control-Allow-Origin' '*';">> $config_file
-        echo "                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';">> $config_file
-        echo "                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';">> $config_file
-        echo "                add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';">> $config_file
-        echo "            }">> $config_file
-        echo "            if (\$request_method = 'GET') {">> $config_file
-        echo "                add_header 'Access-Control-Allow-Origin' '*';">> $config_file
-        echo "                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';">> $config_file
-        echo "                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';">> $config_file
-        echo "                add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';">> $config_file
-        echo "            }">> $config_file
-    fi
-
-    echo "        }">> $config_file
-    echo "        location ~ /\.ht {">> $config_file
-    echo "                deny all;">> $config_file
-    echo "        }">> $config_file
-    echo "        location ~ \.php$ {">> $config_file
-    echo "            include snippets/fastcgi-php.conf;">> $config_file
-    echo "            fastcgi_pass unix:/run/php/php7.2-fpm.sock;">> $config_file
-    echo "        }">> $config_file
-    echo "}">> $config_file
-    echo "">> $config_file
-
-    # Create /var/www stuff
-    mkdir -p /var/www/$domain/html
-    echo "<!DOCTYPE html>"> /var/www/$domain/html/index.html
-    echo "<html>">> /var/www/$domain/html/index.html
-    echo "<head>">> /var/www/$domain/html/index.html
-    echo "<title>Welcome to nginx!</title>">> /var/www/$domain/html/index.html
-    echo "<style>">> /var/www/$domain/html/index.html
-    echo "    body {">> /var/www/$domain/html/index.html
-    echo "        width: 35em;">> /var/www/$domain/html/index.html
-    echo "        margin: 0 auto;">> /var/www/$domain/html/index.html
-    echo "        font-family: Tahoma, Verdana, Arial, sans-serif;">> /var/www/$domain/html/index.html
-    echo "    }">> /var/www/$domain/html/index.html
-    echo "</style>">> /var/www/$domain/html/index.html
-    echo "</head>">> /var/www/$domain/html/index.html
-    echo "<body>">> /var/www/$domain/html/index.html
-    echo "<h1>Welcome to nginx for $domain!</h1>">> /var/www/$domain/html/index.html
-    echo "<p>If you see this page, the nginx web server is successfully installed and">> /var/www/$domain/html/index.html
-    echo "working. Further configuration is required.</p>">> /var/www/$domain/html/index.html
-    echo "<p>For online documentation and support please refer to">> /var/www/$domain/html/index.html
-    echo "<a href="http://nginx.org/">nginx.org</a>.<br/>">> /var/www/$domain/html/index.html
-    echo "Commercial support is available at">> /var/www/$domain/html/index.html
-    echo "<a href="http://nginx.com/">nginx.com</a>.</p>">> /var/www/$domain/html/index.html
-    echo "<p><em>Thank you for using nginx.</em></p>">> /var/www/$domain/html/index.html
-    echo "</body>">> /var/www/$domain/html/index.html
-    echo "</html>">> /var/www/$domain/html/index.html
-    echo "">> /var/www/$domain/html/index.html
-fi
 
 
-# Enable nginx config
-ln -s $config_file /etc/nginx/sites-enabled/
+read -r -p "Matrix well-known? [y/N]: " wellknown
+if [[ "$wellknown" == "y" || "$wellknown" == "Y" ]]; then read -r -p "Delegated URL: " host; fi
+
+read -r -p "Set CORS headers? [y/N]: " cors
+read -r -p "Space separated list of indexes. Leave empty for index.html: " indexes
+if [[ "$indexes" == "" ]]; then indexes="index.html"; fi
+# read -r -p "Use PHP? [y/N]: " use_php
+read -r -p "Get Let's Encrypt certificate? [y/N]: " get_cert
+
+# Create nginx config file
+cat > "$config_file" <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name $domain;
+
+    root /var/www/$domain/html;
+    index $indexes;
+
+EOF
+
+# Create well-known "files"
+if [[ "$wellknown" == "y" || "$wellknown" == "Y" ]];
+then
+
+cat >> "$config_file" <<EOF
+    # well-known files for Matrix server
+    location /.well-known/matrix/client {
+        return 200 '{"m.homeserver": {"base_url": "https://$host"},"m.identity_server": {"base_url": "https://vector.im"}}';
+        add_header Content-Type application/json;
+        add_header 'Access-Control-Allow-Origin' '*';
+    }
+    location /.well-known/matrix/server {
+        return 200 '{"m.server": "$host:443"}';
+        add_header Content-Type application/json;
+    }
+
+EOF
+
+fi # Ending if $wellknown
+
+cat >> "$config_file" <<EOF
+    location / {
+        try_files \$uri \$uri/ =404;
+EOF
+
+# Add CORS headers if selected
+if [[ "$cors" == "y" || "$cors" == "Y" ]];
+then
+
+cat >> "$config_file" <<EOF
+
+        # Enable CORS headers
+        if (\$request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=utf-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+        if (\$request_method = 'POST') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+            add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+        }
+        if (\$request_method = 'GET') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+            add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+        }
+EOF
+
+fi # Ending if $cors
+
+# Ending block location / {
+cat >> "$config_file" <<EOF
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+EOF
+
+# if [[ "$use_php" == "y" || "$use_php" == "Y" ]];
+# then
+
+# cat >> "$config_file" <<EOF
+
+#     location ~ \.php$ {
+#         include snippets/fastcgi-php.conf;
+#         fastcgi_pass unix:/run/php/php7.2-fpm.sock;
+#     }
+# EOF
+
+# fi # Ending if $use_php
+
+
+# Ending block server {
+echo "}" >> "$config_file"
+
+
+# Create /var/www stuff
+mkdir -p "/var/www/$domain/html"
+cat > "/var/www/$domain/html/index.html" <<EOF
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Welcome to nginx!</title>
+        <style>
+            body {
+                width: 35em;
+                margin: 0 auto;
+                font-family: Tahoma, Verdana, Arial, sans-serif;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Welcome to nginx for $domain!</h1>
+        <p>
+            If you see this page, the nginx web server is successfully installed and
+            working. Further configuration is required.
+        </p>
+        <p>
+            For online documentation and support please refer to <a href="https://nginx.org/">nginx.org</a>.<br/>
+            Commercial support is available at <a href="https://nginx.com/">nginx.com</a>.
+        </p>
+        <p><em>Thank you for using nginx.</em></p>
+    </body>
+</html>
+EOF
+
+fi # Ending the else on if $proxy
 
 
 # Test nginx config
@@ -155,14 +202,13 @@ nginx -t > /dev/null
 if [ $? -ne 0 ]; then
     echo "Problem with generating nginx config. Quitting."
     nginx -t
-    rm /etc/nginx/sites-enabled/$domain
     exit 1
 fi
 systemctl restart nginx
 
 
 # Check DNS
-dns=$(host $domain)
+dns=$(host "$domain")
 if [ $? -ne 0 ]; then
     echo "DNS record for $domain don't exist"
     exit 1
@@ -170,4 +216,6 @@ fi
 
 
 # Get and enable LetsEncrypt SSL cert
-certbot --redirect --nginx -d $domain
+if [[ "$get_cert" == "y" || "$get_cert" == "Y" ]]; then
+    certbot --redirect --nginx -d "$domain"
+fi
