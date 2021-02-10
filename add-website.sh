@@ -45,6 +45,9 @@ server {
     listen 80;
     listen [::]:80;
     server_name $domain;
+
+    error_log  /var/log/nginx/$domain.error.log debug;
+    access_log  /var/log/nginx/$domain.access.log;
     
     location / {
         proxy_pass http://localhost:$port;
@@ -77,6 +80,9 @@ server {
 
     root /var/www/$domain/html;
     index $indexes;
+
+    error_log  /var/log/nginx/$domain.error.log debug;
+    access_log  /var/log/nginx/$domain.access.log;
 
 EOF
 
