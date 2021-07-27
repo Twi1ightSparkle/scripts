@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Create three shortcuts in Gnome settings
+# Create three keyboard shortcuts in Gnome settings
 # Screen shot area - /home/twilight/Documents/git/scripts/screen_shot.sh area - Shift+Super+4
 # Screen shot full screen - /home/twilight/Documents/git/scripts/screen_shot.sh full - Shift+Super+3
 # Screen shot window - /home/twilight/Documents/git/scripts/screen_shot.sh window - Shift+Super+5
