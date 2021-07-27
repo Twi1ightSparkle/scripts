@@ -15,6 +15,6 @@ elif [ "$1" == "window" ]; then
 elif [ "$1" == "full" ]; then
     /usr/bin/gnome-screenshot --clipboard --include-pointer --delay=0 --file="$out_directory/$file_name"
 else
-    echo "Supported options: area, window and full."
+    echo "Supported options: area, window, and full."
     echo "Example: ./screen_shot.sh area"
 fi
