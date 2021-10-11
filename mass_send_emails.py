@@ -94,38 +94,41 @@ start_time = datetime.utcnow()
 log_writer('New email batch job started', first=True)
 error_counter = 0
 
+# Set up and log in to the SMTP server
+s = smtplib.SMTP(host=smtp_server, port=smtp_port)
+s.starttls()
+s.login(smtp_user, smtp_password)
 
 # Send emails one at the time
 pbar = progressbar.ProgressBar(maxval=len(data)).start()
 for host in pbar(data):
+    # Create a new message
+    msg = MIMEMultipart()
 
-    # Set up the SMTP server
-    s = smtplib.SMTP(host=smtp_server, port=smtp_port)
-    s.starttls()
-    s.login(smtp_user, smtp_password)
+    # Add mesage body
+    message_str = message(host[1])
 
-    msg = MIMEMultipart() # create a message
-
-    message_str = message(host[1]) # Add mesage body
-
-    # setup the parameters of the message
+    # Setup message headers
     msg['From'] = send_from_name + ' <' + send_from_address + '>'
-    msg['To'] = host[2]
+    msg['To'] = host[0]
     msg['Subject'] = subject
 
     msg.attach(MIMEText(message_str, 'plain'))
 
-    # Send message
+    # Attempt to send the message
     try:
         s.send_message(msg)
     except Exception as err:
-        log_writer(f'Error sending email to {host[1]} <{host[2]}> for hostname {host[0]} - Error message: {err}')
+        log_writer(f'Error sending email to {host[1]} <{host[0]}> for hostname {host[2]} - Error message: {err}')
         error_counter += 1
     else:
-        log_writer(f'Successfully sent email to {host[1]} <{host[2]}>')
-        
-    del msg # Delete message
-    s.quit()  # Terminate the SMTP session and close the connection
+        log_writer(f'Successfully sent email to {host[1]} <{host[0]}>')
+
+    # Delete message
+    del msg
+
+# Terminate the SMTP session
+s.quit()
 
 # Calculate and log runtime
 finish_time = datetime.utcnow()
