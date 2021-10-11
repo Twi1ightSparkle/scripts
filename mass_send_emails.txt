@@ -1,5 +1,5 @@
-host1;Name 1;name1@domain.tld
-host2;Name 2;name2@domain.tld
-host3;Name 3;name3@domain.tld
-host4;Name 4;name4@domain.tld
-host5;Name 5;name5@domain.tld
+name1@domain.tld;host1;Name 1
+name2@domain.tld;host2;Name 2
+name3@domain.tld;host3;Name 3
+name4@domain.tld;host4;Name 4
+name5@domain.tld;host5;Name 5
