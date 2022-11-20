@@ -1,0 +1,15 @@
+{
+  "name": "file-date-rename-to-iso",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Twilight Sparkle",
+  "license": "MIT",
+  "dependencies": {
+    "date-fns": "^2.29.3"
+  }
+}
