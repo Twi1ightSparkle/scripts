@@ -18,21 +18,53 @@ zulu_time(){
 # 1. The text to log
 log() {
     /bin/echo "$(zulu_time) $1" >> "$log_file"
+    echo "$1"
 }
 
-if [ "$1" == "area" ]; then
-    log "Taking area screenshot"
-    /usr/bin/gnome-screenshot --clipboard --area --include-pointer --delay=0 --file="$out_directory/$file_name"
-    log "Area screenshot saved to \"$out_directory/$file_name\""
-elif [ "$1" == "window" ]; then
-    log "Taking window screenshot"
-    /usr/bin/gnome-screenshot --clipboard --window --delay=0 --file="$out_directory/$file_name"
-    log "Window screenshot saved to \"$out_directory/$file_name\""
-elif [ "$1" == "full" ]; then
-    log "Taking full screen screenshot"
-    /usr/bin/gnome-screenshot --clipboard --include-pointer --delay=0 --file="$out_directory/$file_name"
-    log "Full screen screenshot saved to \"$out_directory/$file_name\""
+GNOME_CMD=(
+    "/usr/bin/gnome-screenshot"
+    "--clipboard"
+    "--include-pointer"
+    "--delay" "0"
+    "--file" "$out_directory/$file_name"
+)
+
+KDE_CMD=(
+    "/usr/bin/spectacle"
+    "--background"
+    "--copy-image"
+    "--delay" "0"
+    "--nonotify"
+    "--output" "$out_directory/$file_name"
+)
+
+case "$1" in
+    area)
+        LOG_STRING=area
+        GNOME_CMD+=("--area")
+        KDE_CMD+=("--region");;
+    window)
+        LOG_STRING=window
+        GNOME_CMD+=("--window")
+        KDE_CMD+=("--activewindow");;
+    full)
+        LOG_STRING="full screen"
+        KDE_CMD+=("--fullscreen");;
+    *)
+        log "Supported options: area, window, and full."
+        exit 1;;
+esac
+
+
+log "Taking $LOG_STRING screenshot"
+
+if [ "$XDG_CURRENT_DESKTOP" = "GNOME" ]; then
+    "${GNOME_CMD[@]}"
+elif [ "$XDG_CURRENT_DESKTOP" = "KDE" ]; then
+    "${KDE_CMD[@]}"
 else
-    echo "Supported options: area, window, and full."
-    echo "Example: ./screen_shot.sh area"
+    log "Unsupported desktop environment: $XDG_CURRENT_DESKTOP"
+    exit 1
 fi
+
+log "Screenshot $LOG_STRING saved to \"$out_directory/$file_name\""
