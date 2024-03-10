@@ -1,33 +1,40 @@
 #!/bin/bash
 
-# Remember to convert to linux format. In vim on the webserver, do
-# :set ff=unix
-# :wq
-
-if [[ $EUID -ne 0 ]]; then
-	echo "This script must be run as root"
+if [[ $EUID -eq 0 ]]; then
+	echo "This script must NOT be run as root"
 	exit 1
 fi
 
-apt update
-apt list --upgradable
+sudo apt-get update
+sudo apt list --upgradable
 
-read -p "Okay? Continue? [y/N] " go
+read -rp "Okay? Continue? [y/N] " go
 if [[ $go != "y" && $go != "Y" ]]; then
 	exit 0
 fi
 
-apt -y upgrade
-apt -y dist-upgrade
-apt -y autoclean
-apt -y autoremove
+sudo apt-get --yes upgrade
+sudo apt-get --yes dist-upgrade
+sudo apt-get --yes autoclean
+sudo apt-get --yes autoremove
+
+if hash rustup &>/dev/null; then
+	rustup update
+fi
+
+if hash cargo &>/dev/null; then
+	if ! cargo install-update --all; then
+		cargo install cargo-update
+		cargo install-update 2>/dev/null
+	fi
+fi
 
 if [ -f /var/run/reboot-required ]; then
-	read -p "Reboot required, do it now? [y/N] " boot
+	read -rp "Reboot required, do it now? [y/N] " boot
 	if [[ $boot != "y" && $boot != "Y" ]]; then
 		exit 0
 	else
-		reboot
+		sudo systemctl reboot
 	fi
 else
 	echo "Reboot not required."
