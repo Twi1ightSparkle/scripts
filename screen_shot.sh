@@ -5,14 +5,17 @@
 # Screen shot full screen - /home/twilight/Documents/git/scripts/screen_shot.sh full - Shift+Ctrl+2
 # Screen shot window - /home/twilight/Documents/git/scripts/screen_shot.sh window - Shift+Ctrl+3
 
-file_name=$(/usr/bin/date +"Screen Shot %Y-%m-%d at %I.%M.%S %p.png") # Screen Shot 2020-06-21 11.22.33 PM.png
-out_directory="/home/twilight/Nextcloud/Photos/Screenshots"
-log_file="/home/twilight/Nextcloud/Photos/Screenshots/log.log"
+# Set the output directory in your .zshrc file:
+# export SCREENSHOT_PATH='/home/twilight/Pictures/screenshots'
 
 # Returns the current time stamp in format 2022-07-23T14-56-03Z
 zulu_time(){
     /bin/echo "$(/bin/date -u "+%Y-%m-%dT%H-%M-%SZ")"
 }
+
+file_name="screenshot_$(zulu_time).png"
+out_directory="$SCREENSHOT_PATH"
+log_file="$SCREENSHOT_PATH/screenshots.log"
 
 # Log some text to the log file. Params:
 # 1. The text to log
