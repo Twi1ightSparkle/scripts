@@ -1,17 +1,20 @@
 #!/bin/bash
 
 # Create three keyboard shortcuts in Gnome settings
-# Screen shot area - /home/twilight/Documents/git/scripts/screen_shot.sh area - Shift+Ctrl+1
-# Screen shot full screen - /home/twilight/Documents/git/scripts/screen_shot.sh full - Shift+Ctrl+2
-# Screen shot window - /home/twilight/Documents/git/scripts/screen_shot.sh window - Shift+Ctrl+3
-
-# Set the output directory in your .zshrc file:
-# export SCREENSHOT_PATH='/home/twilight/Pictures/screenshots'
+# Screen shot area - /home/twilight/Documents/git/scripts/screen_shot.sh area "/optional/alternate/path/to/save/screenshots" - Shift+Ctrl+1
+# Screen shot full screen - /home/twilight/Documents/git/scripts/screen_shot.sh full "/optional/alternate/path/to/save/screenshots" - Shift+Ctrl+2
+# Screen shot window - /home/twilight/Documents/git/scripts/screen_shot.sh window "/optional/alternate/path/to/save/screenshots" - Shift+Ctrl+3
 
 # Returns the current time stamp in format 2022-07-23T14-56-03Z
 zulu_time(){
     /bin/echo "$(/bin/date -u "+%Y-%m-%dT%H-%M-%SZ")"
 }
+
+if [[ -n "$2" ]]; then
+    SCREENSHOT_PATH="$2"
+else
+    SCREENSHOT_PATH="$HOME/Pictures"
+fi
 
 file_name="screenshot_$(zulu_time).png"
 out_directory="$SCREENSHOT_PATH"
