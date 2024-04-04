@@ -57,6 +57,10 @@ read -r
 sudo rm "/root/.ssh/authorized_keys"
 sudo rm "/home/admin/.ssh/authorized_keys"
 
+# Clone this script repo to $userToAdd's home directory
+[[ ! -d "/home/$userToAdd/scripts" ]] &&
+    sudo -u "$userToAdd" git clone https://github.com/Twi1ightSparkle/scripts.git "/home/$userToAdd/scripts"
+
 # Install system updates and required base packages
 sudo apt-get -y update
 sudo apt-get -y upgrade
