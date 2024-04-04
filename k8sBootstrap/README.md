@@ -1,0 +1,3 @@
+# K8s bootstrap
+
+This is a test script, do not use in production, probably not secure etc...
