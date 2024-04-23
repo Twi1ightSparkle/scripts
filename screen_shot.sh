@@ -16,6 +16,9 @@ else
     SCREENSHOT_PATH="$HOME/Pictures"
 fi
 
+enableLog=false
+[[ "$3" == true ]] && enableLog=true
+
 file_name="screenshot_$(zulu_time).png"
 out_directory="$SCREENSHOT_PATH"
 log_file="$SCREENSHOT_PATH/screenshots.log"
@@ -23,8 +26,10 @@ log_file="$SCREENSHOT_PATH/screenshots.log"
 # Log some text to the log file. Params:
 # 1. The text to log
 log() {
-    /bin/echo "$(zulu_time) $1" >> "$log_file"
-    echo "$1"
+    if [[ "$enableLog" == true ]]; then
+        /bin/echo "$(zulu_time) $1" >> "$log_file"
+        echo "$1"
+    fi
 }
 
 GNOME_CMD=(
