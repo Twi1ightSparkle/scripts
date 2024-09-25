@@ -41,7 +41,14 @@ else
     matrixUrl="https://$domain/.well-known/matrix"
 
     prettyHeader "$domain Federation Tester result"
-    curl --location --silent "https://federationtester.matrix.org/api/report?server_name=$domain" | jq .
+    federationTesterResult="$(curl --location --silent "${curlParams[@]}" \
+        "https://federationtester.matrix.org/api/report?server_name=$domain")"
+    echo "$federationTesterResult" | jq .
+
+    prettyHeader "$domain Registration flows"
+    synapseDomain="$(echo "$federationTesterResult" | jq '.WellKnownResult.["m.server"]' --raw-output)"
+    curl --data '{}' --header 'content-type: application/json' --request POST --silent "${curlParams[@]}" \
+        "https://$synapseDomain/_matrix/client/v3/register" | jq .
 
     prettyHeader "$domain DNS records"
     dig +noall +answer all "$domain"
