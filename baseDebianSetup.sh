@@ -65,10 +65,6 @@ read -r
 sudo rm "/root/.ssh/authorized_keys"
 sudo rm "/home/admin/.ssh/authorized_keys"
 
-# Clone this script repo to $userToAdd's home directory
-[[ ! -d "/home/$userToAdd/scripts" ]] &&
-    sudo --user "$userToAdd" git clone https://github.com/Twi1ightSparkle/scripts.git "/home/$userToAdd/scripts"
-
 # Install system updates and required base packages
 sudo apt-get --assume-yes update
 sudo apt-get --assume-yes upgrade
@@ -81,6 +77,10 @@ sudo apt-get --assume-yes install \
     rsync \
     tmux \
     vim
+
+# Clone this script repo to $userToAdd's home directory
+[[ ! -d "/home/$userToAdd/scripts" ]] &&
+    sudo --user "$userToAdd" git clone https://github.com/Twi1ightSparkle/scripts.git "/home/$userToAdd/scripts"
 
 # Reboot system to apply updates and hostname
 cat << EOF
