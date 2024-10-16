@@ -46,7 +46,7 @@ else
     echo "$federationTesterResult" | jq .
 
     prettyHeader "$domain Registration flows"
-    synapseDomain="$(echo "$federationTesterResult" | jq '.WellKnownResult.["m.server"]' --raw-output)"
+    synapseDomain="$(echo "$federationTesterResult" | jq '.WellKnownResult."m.server"' --raw-output)"
     curl --data '{}' --header 'content-type: application/json' --request POST --silent "${curlParams[@]}" \
         "https://$synapseDomain/_matrix/client/v3/register" | jq .
 
