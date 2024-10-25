@@ -38,7 +38,7 @@ fi
 if hash cargo &>/dev/null; then
 	if ! cargo install-update --all; then
 		cargo install cargo-update
-		cargo install-update 2>/dev/null
+		cargo install-update --all 2>/dev/null
 	fi
 fi
 
