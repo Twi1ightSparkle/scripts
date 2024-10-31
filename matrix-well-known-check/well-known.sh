@@ -53,7 +53,7 @@ else
     prettyHeader "$domain DNS records"
     dig +noall +answer all "$domain"
 
-    files=(client server)
+    files=(client server support)
     for file in "${files[@]}"; do
         prettyHeader "$matrixUrl/$file headers"
         headers="$(curl --location --silent "${curlParams[@]}" --dump-header - --output /dev/null "$matrixUrl/$file")"
