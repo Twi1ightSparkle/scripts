@@ -45,11 +45,16 @@ else
         "https://federationtester.matrix.org/api/report?server_name=$domain")"
     echo "$federationTesterResult" | jq .
 
-    prettyHeader "$domain Registration flows"
     synapseDomain="$(echo "$federationTesterResult" | jq '.WellKnownResult."m.server"' --raw-output)"
     if [[ -z "$synapseDomain" ]]; then
         synapseDomain="$(echo "$federationTesterResult" | jq '.DNSResult.SRVRecords[0].Target' --raw-output)"
     fi
+
+    prettyHeader "$domain Login flows"
+    curl --header 'content-type: application/json' --silent "${curlParams[@]}" \
+        "https://$synapseDomain/_matrix/client/v3/login" | jq .
+
+    prettyHeader "$domain Registration flows"
     curl --data '{}' --header 'content-type: application/json' --request POST --silent "${curlParams[@]}" \
         "https://$synapseDomain/_matrix/client/v3/register" | jq .
 
