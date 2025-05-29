@@ -77,8 +77,8 @@ else
 
         prettyHeader "$matrixUrl/$file content"
         if ! curl --location --silent "${curlParams[@]}" "$matrixUrl/$file" | jq . 2>/dev/null; then
-            echo -e "$matrixUrl/$file content is not valid JSON\n\n"
-            curl --location --silent "${curlParams[@]}" "$matrixUrl/$file"
+            echo -e "$matrixUrl/$file content is not valid JSON. (Output below is trimmed to first 10 lines)\n\n"
+            curl --location --silent "${curlParams[@]}" "$matrixUrl/$file" | head -10
         fi
     done
 fi
