@@ -29,7 +29,7 @@ masTestResult="$(
 )"
 
 if echo "$masTestResult" \
-    | grep -E '"(Unknown access token|Invalid authorization header)"' \
+    | grep -E '"(Access token expired|Invalid authorization header|Unknown access token)"' \
     &>/dev/null
 then
     masAdminToken="$(
