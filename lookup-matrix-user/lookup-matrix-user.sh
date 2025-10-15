@@ -130,13 +130,33 @@ curl \
     | jq .
 
 # Get MAS user upstream oauth
+upstreamResult="$(
+    curl \
+        --header "Authorization: Bearer $masAdminToken" \
+        --request GET \
+        --silent \
+        --url "$masEndpoint/api/admin/v1/upstream-oauth-links?filter%5Buser%5D=$masUserId"
+    )"
 echo -e "\nMAS Admin API: Get user upstream oauth"
-curl \
-    --header "Authorization: Bearer $masAdminToken" \
-    --request GET \
-    --silent \
-    --url "$masEndpoint/api/admin/v1/upstream-oauth-links?filter%5Buser%5D=$masUserId" \
-    | jq .
+echo "$upstreamResult" | jq .
+
+# Get MAS user upstream oauth provider details
+upstreamCount="$(echo "$upstreamResult" | jq '.meta.count')"
+if [[ "$upstreamCount" -ge 1 ]]; then
+    providerIds="$(echo "$upstreamResult" \
+        | jq --raw-output '.data[].attributes.provider_id')"
+
+    echo "$providerIds" | while read -r id; do
+        echo -e "\nMAS Admin API: Get details about the users upstream oauth \
+provider $id"
+        curl \
+            --header "Authorization: Bearer $masAdminToken" \
+            --request GET \
+            --silent \
+            --url "$masEndpoint/api/admin/v1/upstream-oauth-providers/$id" \
+            | jq .
+    done
+fi
 
 # Get user info from Synapse
 echo -e "\nSynapse Admin API: Get user info"
