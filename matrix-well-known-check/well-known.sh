@@ -39,7 +39,7 @@ EOT
 else
     shift
     curlParams=("$@")
-    matrixUrl="https://$domain/.well-known/matrix"
+    wellKnownUrl="https://$domain/.well-known"
 
     prettyHeader "$domain Federation Tester result"
     federationTesterResult="$(curl --location --silent "${curlParams[@]}" \
@@ -65,11 +65,11 @@ else
     prettyHeader "$domain DNS records"
     dig +noall +answer all "$domain"
 
-    files=(client server support)
+    files=(matrix/client matrix/server matrix/support element/element.json)
     for file in "${files[@]}"; do
-        prettyHeader "$matrixUrl/$file headers"
+        prettyHeader "$wellKnownUrl/$file headers"
         headers="$(curl --location --silent "${curlParams[@]}" --dump-header - \
-            --output /dev/null "$matrixUrl/$file")"
+            --output /dev/null "$wellKnownUrl/$file")"
         echo "$headers"
 
         redirectURL="$(echo "$headers" | grep "location: ")"
@@ -81,13 +81,13 @@ else
             dig +noall +answer all "$redirectDomain"
         fi
 
-        prettyHeader "$matrixUrl/$file content"
-        if ! curl --location --silent "${curlParams[@]}" "$matrixUrl/$file" \
+        prettyHeader "$wellKnownUrl/$file content"
+        if ! curl --location --silent "${curlParams[@]}" "$wellKnownUrl/$file" \
             | jq . 2>/dev/null;
         then
-            echo -e "$matrixUrl/$file content is not valid JSON. \
+            echo -e "$wellKnownUrl/$file content is not valid JSON. \
 (Output below is trimmed to first 10 lines)\n\n"
-            curl --location --silent "${curlParams[@]}" "$matrixUrl/$file" \
+            curl --location --silent "${curlParams[@]}" "$wellKnownUrl/$file" \
                 | head -10
         fi
     done
