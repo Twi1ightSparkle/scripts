@@ -1,7 +1,6 @@
 #!/bin/bash
 
 workDir="$(dirname "$0")"
-masTokenFile="$workDir/masToken"
 scriptInput="$1"
 
 if [[ -n "$LOOKUP_MATRIX_USER_CONFIG_FILE" ]]; then
@@ -16,35 +15,6 @@ if [[ ! -f "$configFile" ]]; then
 fi
 source "$configFile"
 
-# Check if we have a valid MAS Admin token stored and authenticate if not
-touch "$masTokenFile"
-chmod 600 "$masTokenFile"
-masAdminToken="$(head -n 1 "$masTokenFile")"
-masTestResult="$(
-    curl \
-        --header "Authorization: Bearer $masAdminToken" \
-        --request GET \
-        --silent \
-        --url "$masEndpoint/api/admin/v1/users/by-username"
-)"
-
-if echo "$masTestResult" \
-    | grep -E '"(Access token expired|Invalid authorization header|Unknown access token)"' \
-    &>/dev/null
-then
-    masAdminToken="$(
-        curl \
-            --data grant_type=client_credentials \
-            --data scope=urn:mas:admin \
-            --request POST \
-            --silent \
-            --url "$masEndpoint/oauth2/token" \
-            --user "$masClientId:$masClientSecret" \
-            | jq -r '.access_token'
-        )"
-    echo "$masAdminToken" > "$masTokenFile"
-fi
-
 # Process script input
 if [[ "$scriptInput" != "@"* ]] && [[ $scriptInput == *"@"* ]]; then
     # Script input does not start with @ so not a full Matrix ID,
@@ -53,7 +23,7 @@ if [[ "$scriptInput" != "@"* ]] && [[ $scriptInput == *"@"* ]]; then
     emailAddressEncoded=${emailAddress//+/%2B}
     emailResult="$(
         curl \
-            --header "Authorization: Bearer $masAdminToken" \
+            --header "Authorization: Bearer $adminToken" \
             --request GET \
             --silent \
             --url "$masEndpoint/api/admin/v1/user-emails?filter%5Bemail%5D=$emailAddressEncoded"
@@ -84,7 +54,7 @@ else
     fi
     localpartResult="$(
         curl \
-            --header "Authorization: Bearer $masAdminToken" \
+            --header "Authorization: Bearer $adminToken" \
             --request GET \
             --silent \
             --url "$masEndpoint/api/admin/v1/users/by-username/$localpart"
@@ -105,7 +75,7 @@ fi
 # Get MAS user details
 userResult="$(
     curl \
-        --header "Authorization: Bearer $masAdminToken" \
+        --header "Authorization: Bearer $adminToken" \
         --request GET \
         --silent \
         --url "$masEndpoint/api/admin/v1/users/$masUserId" \
@@ -123,7 +93,7 @@ fi
 # Get MAS user emails
 echo -e "\nMAS Admin API: Get user emails"
 curl \
-    --header "Authorization: Bearer $masAdminToken" \
+    --header "Authorization: Bearer $adminToken" \
     --request GET \
     --silent \
     --url "$masEndpoint/api/admin/v1/user-emails?filter%5Buser%5D=$masUserId" \
@@ -132,7 +102,7 @@ curl \
 # Get MAS user upstream oauth
 upstreamResult="$(
     curl \
-        --header "Authorization: Bearer $masAdminToken" \
+        --header "Authorization: Bearer $adminToken" \
         --request GET \
         --silent \
         --url "$masEndpoint/api/admin/v1/upstream-oauth-links?filter%5Buser%5D=$masUserId"
@@ -150,7 +120,7 @@ if [[ "$upstreamCount" -ge 1 ]]; then
         echo -e "\nMAS Admin API: Get details about the users upstream oauth \
 provider $id"
         curl \
-            --header "Authorization: Bearer $masAdminToken" \
+            --header "Authorization: Bearer $adminToken" \
             --request GET \
             --silent \
             --url "$masEndpoint/api/admin/v1/upstream-oauth-providers/$id" \
@@ -161,7 +131,7 @@ fi
 # Get user info from Synapse
 echo -e "\nSynapse Admin API: Get user info"
 curl \
-    --header "Authorization: Bearer $synapseAdminToken" \
+    --header "Authorization: Bearer $adminToken" \
     --request GET \
     --silent \
     --url "$synapseEndpoint/_synapse/admin/v2/users/$matrixId" \

@@ -8,14 +8,15 @@ To get started, create a config file
 serverName="example.com"
 synapseEndpoint="https://synapse.example.com"
 masEndpoint="https://account.example.com"
-synapseAdminToken="mct_abcd"
-masClientId="0000000000000000000SYNAPSE"
-masClientSecret="secret"
+adminToken="mpt_abcd"
 ```
 
 By default, the script will look for `config.env` in the same directory as the
 script. Alternatively set the full path to your config file as
 `LOOKUP_MATRIX_USER_CONFIG_FILE` in your env.
+
+`adminToken` must be a MAS personal token with both MAS and Synapse Admin
+permissions.
 
 You can then lookup your users by localpart, Matrix ID, or email
 
@@ -24,6 +25,3 @@ You can then lookup your users by localpart, Matrix ID, or email
 ./lookup-matrix-user.sh @twilight:example.com
 ./lookup-matrix-user.sh twilight@example.com
 ```
-
-The script will store your MAS Admin Token in the file
-`$scriptDirectory/masToken` to not re-authenticate every time the script runs.
