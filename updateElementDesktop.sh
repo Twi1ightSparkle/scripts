@@ -5,27 +5,37 @@
 
 ### Options
 
-elementLocation="$HOME/.local/bin/element-desktop"
-downloadLocation="$elementLocation/downloads"
-symlinkLocation="$elementLocation/element"
+# Copy all options into a file in the same directory as the script named
+# updateElementDesktop.env to change
 
-# Which logo to use in the Application Launcher
-# Note this is only downloaded once for the Application launcher. To replace the
-# icon, delete $elementLocation/element.png before running the script.
+if [[ -f "$(dirname "$0")/updateElementDesktop.env" ]]; then
+    # shellcheck disable=SC1091
+    source "$(dirname "$0")/updateElementDesktop.env"
+else
 
-# Normal green
-# logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Element%20Logomark%20%20-%20Transparent%20-%20256px.png"
+    elementLocation="$HOME/.local/bin/element-desktop"
+    downloadLocation="$elementLocation/downloads"
+    symlinkLocation="$elementLocation/element"
 
-# Monochrome white
-logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20White%20-%20Transparent%20-%20256px.png"
+    # Which logo to use in the Application Launcher
+    # Note this is only downloaded once for the Application launcher. To replace the
+    # icon, delete $elementLocation/element.png before running the script.
 
-# Monochrome black
-# logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20Black%20-%20Transparent%20-%20256px.png"
+    # Normal green
+    # logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Element%20Logomark%20%20-%20Transparent%20-%20256px.png"
 
-# Replace the default green task manager icon with the above selected icon?
-# Requires ffmpeg installed to convert the png to ico. Note if you selected the
-# "Normal green" logo above this is unnecessary.
-replaceIcon=true
+    # Monochrome white
+    logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20White%20-%20Transparent%20-%20256px.png"
+
+    # Monochrome black
+    # logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20Black%20-%20Transparent%20-%20256px.png"
+
+    # Replace the default green task manager icon with the above selected icon?
+    # Requires ffmpeg installed to convert the png to ico. Note if you selected the
+    # "Normal green" logo above this is unnecessary.
+    replaceIcon=true
+
+fi
 
 ###
 
@@ -45,9 +55,18 @@ if ! curl --head --silent "$downloadURL" | grep "200 OK" > /dev/null; then
     exit 1
 fi
 
-# Crete the ED directory if needed
+# Crete the ED directories if needed
+if [[ ! -d "$elementLocation" ]]; then
+    if ! mkdir -p "$elementLocation"; then
+        echo "Failed to create the directory $elementLocation"
+        exit 1
+    fi
+fi
 if [[ ! -d "$downloadLocation" ]]; then
-    mkdir -p "$downloadLocation"
+    if ! mkdir -p "$downloadLocation"; then
+        echo "Failed to create the directory $downloadLocation"
+        exit 1
+    fi
 fi
 
 # Download new version
@@ -70,7 +89,7 @@ else
     # Delete archive
     rm "$tarPath"
 
-    # # Read and delete old symlinks if it exists
+    # Read and delete old symlinks if it exists
     if [[ -L "$symlinkLocation" ]]; then
         oldVersion="$(realpath "$symlinkLocation")"
         rm "$symlinkLocation"
@@ -102,7 +121,7 @@ else
     fi
 fi
 
-# Create desktop file if it doesn't exist
+# Download logo and create Applications entry if they don't exist
 logoLocation="$elementLocation/element.png"
 if [[ ! -f "$logoLocation" ]]; then
     echo "Downloading Element logo"
