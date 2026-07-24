@@ -65,11 +65,18 @@ else
     prettyHeader "$domain DNS records"
     dig +noall +answer all "$domain"
 
-    files=(matrix/client matrix/server matrix/support element/element.json)
+    files=(
+        "$wellKnownUrl/matrix/client"
+        "$wellKnownUrl/matrix/server"
+        "$wellKnownUrl/matrix/support"
+        "$wellKnownUrl/element/element.json"
+        "https://$synapseDomain/_synapse/ess/element-pro/config"
+    )
+
     for file in "${files[@]}"; do
-        prettyHeader "$wellKnownUrl/$file headers"
+        prettyHeader "$file headers"
         headers="$(curl --location --silent "${curlParams[@]}" --dump-header - \
-            --output /dev/null "$wellKnownUrl/$file")"
+            --output /dev/null "$file")"
         echo "$headers"
 
         redirectURL="$(echo "$headers" | grep "location: ")"
@@ -81,14 +88,15 @@ else
             dig +noall +answer all "$redirectDomain"
         fi
 
-        prettyHeader "$wellKnownUrl/$file content"
-        if ! curl --location --silent "${curlParams[@]}" "$wellKnownUrl/$file" \
+        prettyHeader "$file content"
+        if ! curl --location --silent "${curlParams[@]}" "$file" \
             | jq . 2>/dev/null;
         then
-            echo -e "$wellKnownUrl/$file content is not valid JSON. \
+            echo -e "$file content is not valid JSON. \
 (Output below is trimmed to first 10 lines)\n\n"
-            curl --location --silent "${curlParams[@]}" "$wellKnownUrl/$file" \
+            curl --location --silent "${curlParams[@]}" "$file" \
                 | head -10
         fi
     done
 fi
+
