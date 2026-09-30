@@ -22,19 +22,16 @@ else
     # icon, delete $elementLocation/element.png before running the script.
 
     # Normal green
-    # logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Element%20Logomark%20%20-%20Transparent%20-%20256px.png"
+    logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Element%20Logomark%20%20-%20Transparent%20-%20256px.png"
 
     # Monochrome white
-    logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20White%20-%20Transparent%20-%20256px.png"
+    # logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20White%20-%20Transparent%20-%20256px.png"
 
     # Monochrome black
     # logoURL="https://raw.githubusercontent.com/element-hq/logos/refs/heads/master/element/Secondary/Element%20Logomark%20-%20Black%20-%20Transparent%20-%20256px.png"
 
-    # Replace the default green task manager icon with the above selected icon?
-    # Requires ffmpeg installed to convert the png to ico. Note if you selected the
-    # "Normal green" logo above this is unnecessary.
-    replaceIcon=true
-
+    # Candy Icons
+    # logoURL="https://raw.githubusercontent.com/EliverLara/candy-icons/refs/heads/master/apps/scalable/element-desktop.svg"
 fi
 
 ###
@@ -48,9 +45,10 @@ fi
 downloadURL="https://packages.element.io/desktop/install/linux/glibc-x86-64/element-desktop-$elementVersion.tar.gz"
 unTarPath="$downloadLocation/element-desktop-$elementVersion"
 tarPath="$unTarPath.tar.gz"
+logoExtension=${logoURL##*.}
 
 # Check valid version
-if ! curl --head --silent "$downloadURL" | grep "200 OK" > /dev/null; then
+if ! curl --head --silent "$downloadURL" | grep "HTTP/2 200" > /dev/null; then
     echo "Invalid Element Desktop version \"v$elementVersion\""
     exit 1
 fi
@@ -102,27 +100,10 @@ else
 
     # Symlink
     ln -s "$unTarPath" "$symlinkLocation"
-
-    # Replace App icon
-    if [[ "$replaceIcon" == "true" ]]; then
-        logoDir="$unTarPath/resources/build"
-        rm "$logoDir/icon.png"
-        rm "$logoDir/icon.ico"
-        echo "Downloading Element logo"
-        if ! curl --silent --output "$logoDir/icon.png" "$logoURL"; then
-            echo "Failed to download the logo"
-            exit 1
-        fi
-        echo "Converting the logo png to ico using ffmpeg"
-        if ! ffmpeg -loglevel quiet -i "$logoDir/icon.png" "$logoDir/icon.ico"; then
-            echo "Failed to convert the logo png to ico using ffmpeg"
-            exit 1
-        fi
-    fi
 fi
 
 # Download logo and create Applications entry if they don't exist
-logoLocation="$elementLocation/element.png"
+logoLocation="$elementLocation/element.$logoExtension"
 if [[ ! -f "$logoLocation" ]]; then
     echo "Downloading Element logo"
     if ! curl --silent --output "$logoLocation" "$logoURL"; then
