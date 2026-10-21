@@ -21,7 +21,7 @@ fi
 
 # Fedora
 if hash dnf &>/dev/null; then
-	sudo dnf upgrade --refresh
+	sudo dnf upgrade --refresh --offline
 fi
 
 # Flatpak
@@ -46,6 +46,11 @@ fi
 if hash kubectl krew &>/dev/null; then
 	kubectl krew update
 	kubectl krew upgrade
+fi
+
+# Fedora offline updates, so reboot
+if hash dnf &>/dev/null; then
+	sudo dnf5 offline reboot
 fi
 
 # Check if reboot is required
